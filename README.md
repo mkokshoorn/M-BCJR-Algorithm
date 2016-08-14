@@ -1,6 +1,6 @@
 # M-BCJR Algorithm
 
-Matlab implementation of the M-BCJR Algorithm from the paper:
+MATLAB implementation of the M-BCJR Algorithm from the paper:
 
      Anderson, J. B., & Prlja, A. (2010, October). Turbo equalization and an 
      M-BCJR algorithm for strongly narrowband intersymbol interference. In 
@@ -9,7 +9,7 @@ Matlab implementation of the M-BCJR Algorithm from the paper:
      
 ## Code Example
 
-Define an intersymbol interference (ISI) channel, v and create M_BCJR object.
+Define an inter-symbol interference (ISI) channel, v and create M_BCJR object.
  
  >\>\>v=[1,0.8,0.3,0.15,0.07];
  
@@ -26,7 +26,7 @@ Create test data and define noise power.
  
  >\>\>data_len=length(data);
  
-BPSK modulate data and padd signal for M-BCJR ternmination.
+BPSK modulate data and pad signal for M-BCJR termination.
  
  >\>\>tx_sig=[-1 * ones(1,M_T),2*data-1,-1 * ones(1,M_T)];  % Pad with -1 for BCJR algorithm.
  
@@ -34,6 +34,6 @@ BPSK modulate data and padd signal for M-BCJR ternmination.
 
  >\>\>y=rx_sig(M_T+1:2*M_T+data_len-1);
  
-Decode the recieved signal.
+Decode the received signal.
 
  >\>\>BCJR_dec.step(y,zeros(data_len,1) ,N_0*ones(data_len,1),M)
