@@ -10,16 +10,23 @@ A soft input, soft-output MATLAB implementation of the M-BCJR Algorithm from the
 ## Class Inputs/Outputs     
 
 CONSTRUCTOR:
+
 function obj = M_BCJR_decoder(v)
+
 @input 'v' ISI channel of length M_T taps.
 
 STEP: 
+
 [a_APP_LLR] = step(obj,y,A_ext_LLR,N_0,M,SO)
 
 @input 'y' recieved symbols.
+
 @input 'a_ext_LLR' Extrinsic LLR information each symbol.
+
 @input 'N_0' Noise information for each symbol.
+
 @input 'M' number of survivors at each trellis step.
+
 
 @output 'a_APP_LLR' APP LLR of each symbol (i.e. soft output)
      
