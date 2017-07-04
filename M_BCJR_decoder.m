@@ -16,34 +16,50 @@ classdef M_BCJR_decoder
 % @input 'v' ISI channel of length M_T taps.
 %
 % STEP:
-% @input 'y' recieved .
-% @input 'A_ext_LLR' APP information for each symbol.
+% @input 'y' recieved symbols.
+% @input 'a_ext_LLR' Extrinsic LLR information each symbol.
 % @input 'N_0' Noise information for each symbol.
 % @input 'M' number of survivors at each trellis step.
 %
-% @output 'SO' Extrinsic LLR of each symbol.
+% @output 'a_APP_LLR' APP LLR of each symbol.
 %
 % EXAMPLE:
 % 
 % 
-% v=[1,0.8,0.3,0.15,0.07];
-% BCJR_dec=M_BCJR_decoder(v);
-% M_T=length(v)
 % 
-% %Create Data
-% data=[0,1,0,1];
-% data_len=length(data);
+% Define an inter-symbol interference (ISI) channel, v and create M_BCJR object.
+%  
+%  >>> v=[1,0.8,0.3,0.15,0.07];
+%  
+%  >>> BCJR_dec=M_BCJR_decoder(v); 
+%  
+%  >>> M_T=length(v); 
+%  
+%  
+% Create test data and define noise power.
+%  
+%  >>> d=[0,1,0,1]; % Short binary  example sequence.
+%  
+%  >>> N_0=0.01;
+%  
+%  >>> data_len=length(d);
+%  
+% BPSK modulate data and pad signal for M-BCJR termination.
+%  
+%  >>> x = [ -1 * ones(1,M_T),2*data-1,-1 * ones(1,M_T)];  % Pad with -1 for BCJR algorithm.
+%  
+%  >>> rx_sig = conv(x,v) + randn(size(conv(x,v))).*sqrt(N_0)% Add noise here.
 % 
-% %%BPSK tranmission.
-% tx_sig=[-1*ones(1,M_T),2*data-1,-1*ones(1,M_T)];  %Pad with -1 for BCJR algorithm.
-% rx_sig=conv(tx_sig,v)  % + Noise.
+%  >>> y=rx_sig(M_T+1:2*M_T+data_len-1);
+%  
+% Decode the received signal.
 % 
+%  >\>\> x_LLR = BCJR_dec.step(y,zeros(data_len,1) ,N_0*ones(data_len,1),M)
+%  
 % 
-% y=rx_sig(M_T+1:2*M_T+data_len-1)
-% 
-% N_0=0.01;
-% BCJR_dec.step(y,zeros(data_len,1) ,N_0*ones(data_len,1),M)
-
+%  
+%  
+%  
 % -------------------------------------------------------------------------
 % Notes: Assumes that intiial state is the all '-1'
 % -------------------------------------------------------------------------    
@@ -121,22 +137,23 @@ classdef M_BCJR_decoder
                            
         end
 
-        function [SO] = step(obj,y, A_ext_LLR ,N_0,M)
+        function [a_APP_LLR] = step(obj,y, a_ext_LLR ,N_0,M)
             
             %Prepare Extrinsic Info. --------------------------------------
-            A_ext_LLR_appended=[A_ext_LLR(:)',0*ones(1,obj.M_T-1)];
+            a_ext_LLR_appended=[a_ext_LLR(:)',0*ones(1,obj.M_T-1)];
             N_0=[N_0;mean(N_0).*ones(obj.M_T,1)];
             pi_noise=1./sqrt(pi*N_0);
 
             %M can not be larger than the number of states
             M=min(obj.R,M);
+            
             %Get Word Length.
             N=length(y);
                         
             %Compute APP Probabilities. -----------------------------------
             P_APP_n_1=zeros(1,N);
             for n=1:N  
-                P_APP_n_1(n)=(tanh(A_ext_LLR_appended(n)/2)/2+0.5); 
+                P_APP_n_1(n)=(tanh(a_ext_LLR_appended(n)/2)/2+0.5); 
             end            
             
             %Compute Alpha Probabilities ----------------------------------
@@ -150,6 +167,7 @@ classdef M_BCJR_decoder
             LLL_a_n=zeros(1,N);
 
             for n=1:N-obj.M_T+1
+                
                 pos_set=lambda(obj.pos,n);
                 neg_set=lambda(obj.neg,n);
                 
@@ -166,7 +184,7 @@ classdef M_BCJR_decoder
             % -------------------------------------------------------------
 
             %Subtract APP info.
-            LLL_a_n=LLL_a_n-A_ext_LLR_appended;            
+            %LLL_a_n=LLL_a_n-a_ext_LLR_appended;            
             
             %Clip
             max_LLR=38.1400;
@@ -175,12 +193,11 @@ classdef M_BCJR_decoder
            
             
             %Calculate Soft Outputs.
-            SO=LLL_a_n(1:end-obj.M_T+1);
-            SO=SO(:);
+            a_APP_LLR=LLL_a_n(1:end-obj.M_T+1);
             
             %Remove any Nans
-            if(sum(isnan(SO))>0)
-                SO(isnan(SO))=0;
+            if(sum(isnan(a_APP_LLR))>0)
+                a_APP_LLR(isnan(a_APP_LLR))=0;
             end
 
         end
@@ -201,7 +218,6 @@ classdef M_BCJR_decoder
 
                 J_0=1;
                 J_1=2;                  
-
 
                 for n=1:N  
                     for I=alpha_survivors(:,n)'    
@@ -267,7 +283,7 @@ classdef M_BCJR_decoder
         %                 if(length(alpha_survivors(:,n+1))>M)
         %                    error
         %                 end
-
+        
                 end
                 
                 alpha_trim=alpha(:,2:N-1);
@@ -390,12 +406,7 @@ classdef M_BCJR_decoder
         end
     
     end
-    
-    
-    
-  
-    
-    
+
 end
 
 
