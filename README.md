@@ -1,11 +1,27 @@
 # M-BCJR Algorithm
 
-MATLAB implementation of the M-BCJR Algorithm from the paper:
+A soft input, soft-output MATLAB implementation of the M-BCJR Algorithm from the paper:
 
      Anderson, J. B., & Prlja, A. (2010, October). Turbo equalization and an 
      M-BCJR algorithm for strongly narrowband intersymbol interference. In 
      Information Theory and its Applications (ISITA), 2010 International 
      Symposium on (pp. 261-266). IEEE
+     
+## Class Inputs/Outputs     
+
+CONSTRUCTOR:
+function obj = M_BCJR_decoder(v)
+@input 'v' ISI channel of length M_T taps.
+
+STEP: 
+[a_APP_LLR] = step(obj,y,A_ext_LLR,N_0,M,SO)
+
+@input 'y' recieved symbols.
+@input 'a_ext_LLR' Extrinsic LLR information each symbol.
+@input 'N_0' Noise information for each symbol.
+@input 'M' number of survivors at each trellis step.
+
+@output 'a_APP_LLR' APP LLR of each symbol (i.e. soft output)
      
 ## Code Example
 
@@ -30,7 +46,7 @@ BPSK modulate data and pad signal for M-BCJR termination.
  
  >\>\>tx_sig=[-1 * ones(1,M_T),2*data-1,-1 * ones(1,M_T)];  % Pad with -1 for BCJR algorithm.
  
- >\>\>rx_sig=conv(tx_sig,v) % Add noise here.
+ >\>\>rx_sig=conv(tx_sig,v)  % Add noise here.
 
  >\>\>y=rx_sig(M_T+1:2*M_T+data_len-1);
  
